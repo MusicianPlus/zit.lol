@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 // Middlewares
 app.use(cors({
@@ -9,19 +10,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
-
-// Manuel cookie-parser (hata düzeltilmiş versiyonu)
-app.use((req, res, next) => {
-  const cookieHeader = req.headers.cookie;
-  if (cookieHeader) {
-    const cookies = Object.fromEntries(cookieHeader.split(';').map(c => c.trim().split('=')));
-    req.cookies = cookies;
-  } else {
-    // Çerez başlığı yoksa, req.cookies'i boş bir nesne olarak tanımla
-    req.cookies = {};
-  }
-  next();
-});
+app.use(cookieParser());
 
 // Modül router'ları 
 const stockRoutes = require('./modules/stock-management/stock.controller');
