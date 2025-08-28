@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
 // Middlewares (servera yüklerken origin: 'https://zit.lol',)
@@ -10,7 +9,16 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
-app.use(cookieParser());
+
+// Manuel cookie-parser (sadece token'ı ayrıştırmak için)
+app.use((req, res, next) => {
+  const cookieHeader = req.headers.cookie;
+  if (cookieHeader) {
+    const cookies = Object.fromEntries(cookieHeader.split(';').map(c => c.trim().split('=')));
+    req.cookies = cookies;
+  }
+  next();
+});
 
 // Modül router'ları 
 const stockRoutes = require('./modules/stock-management/stock.controller');
