@@ -1,0 +1,26 @@
+name: Deploy to EC2 via GitHub Actions
+
+on:
+  push:
+    branches:
+      - main # main branch'e yapılan her push bu script'i tetikler
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/compman # Projenin EC2'deki tam yolu
+            git pull origin main
+            npm install
+            pm2 restart compman || pm2 start npm --name "compman" -- run dev
