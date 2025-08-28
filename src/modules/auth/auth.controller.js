@@ -12,7 +12,7 @@ const loginUser = async (req, res) => {
         res.cookie('auth-token', token, {
             httpOnly: true,
             secure: true,
-            sameSite: 'None', // veya 'None'
+            sameSite: 'Lax', // veya 'None'
             domain: '.zit.lol' // Tüm alt alan adları için
         });
 
