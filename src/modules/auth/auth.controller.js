@@ -11,7 +11,7 @@ const loginUser = async (req, res) => {
         // Secure: Üretim ortamında sadece HTTPS üzerinde çalışır
         res.cookie('auth-token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,
             sameSite: 'None', // veya 'None'
             domain: '.zit.lol' // Tüm alt alan adları için
         });
