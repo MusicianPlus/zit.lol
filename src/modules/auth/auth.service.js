@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { findUserByUsername } = require('./auth.repository');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticateUser = async (username, password, rememberMe) => {
     // 1. Repository'yi kullanarak kullanıcıyı bul

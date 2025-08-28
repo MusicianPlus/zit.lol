@@ -40,7 +40,7 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_super_secret_key');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded; // Token içindeki bilgileri isteğe ekle
         next(); // Bir sonraki middleware veya rotaya geç
     } catch (error) {
