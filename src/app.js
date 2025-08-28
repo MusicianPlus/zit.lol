@@ -3,19 +3,22 @@ const app = express();
 const path = require('path');
 const cors = require('cors');
 
-// Middlewares (servera yüklerken origin: 'https://zit.lol',)
+// Middlewares
 app.use(cors({
   origin: 'https://zit.lol',
   credentials: true,
 }));
 app.use(express.json());
 
-// Manuel cookie-parser (sadece token'ı ayrıştırmak için)
+// Manuel cookie-parser (hata düzeltilmiş versiyonu)
 app.use((req, res, next) => {
   const cookieHeader = req.headers.cookie;
   if (cookieHeader) {
     const cookies = Object.fromEntries(cookieHeader.split(';').map(c => c.trim().split('=')));
     req.cookies = cookies;
+  } else {
+    // Çerez başlığı yoksa, req.cookies'i boş bir nesne olarak tanımla
+    req.cookies = {};
   }
   next();
 });
@@ -39,9 +42,5 @@ app.use('/api/importer', importerRoutes);
 app.use('/api/production', productionRoutes);
 app.use('/api/components', componentRoutes);
 app.use('/api/pcb', pcbRoutes);
-
-// Statik front-end dosyalarını sunma kısmı kaldırıldı.
-// Bu kısım production'da ayrı bir sunucu (örneğin Nginx) veya
-// aynı sunucuda farklı bir port üzerinden sunulmalıdır.
 
 module.exports = app;
