@@ -1,0 +1,28 @@
+# Node.js bağımlılıkları
+node_modules/
+frontend/
+uploads/
+.vs/
+etc/
+
+#pem dosyaları
+pem.pem
+src/pem.pem
+
+#testler
+src/test.js
+src/test_data.csv
+
+#bokpüsür
+src/uploads
+
+# Ortam dosyaları
+.env
+.env.local
+.env.production
+
+# Log ve cache
+npm-debug.log*
+*.log
+.DS_Store
+.vscode/
