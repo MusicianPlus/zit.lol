@@ -6,7 +6,7 @@ const cors = require('cors');
 
 // Middlewares (servera yüklerken origin: 'https://zit.lol',)
 app.use(cors({
-  origin: '*',
+  origin: 'https://zit.lol',
   credentials: true,
 }));
 app.use(express.json());
