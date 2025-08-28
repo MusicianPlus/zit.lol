@@ -12,6 +12,8 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+app.set('trust proxy', 1); // veya sadece 'true' de olabilir
+
 // Modül router'ları 
 const stockRoutes = require('./modules/stock-management/stock.controller');
 const bomRoutes = require('./modules/bom-management/bom.controller');
