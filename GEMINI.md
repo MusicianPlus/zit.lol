@@ -1,4 +1,4 @@
-# GEMINI.md
+# README.md
 
 ## Project Overview
 
