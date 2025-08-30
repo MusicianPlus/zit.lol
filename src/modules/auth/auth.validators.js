@@ -1,0 +1,11 @@
+const Joi = require('joi');
+
+const loginSchema = Joi.object({
+    username: Joi.string().required(),
+    password: Joi.string().required(),
+    rememberMe: Joi.boolean(),
+});
+
+module.exports = {
+    loginSchema,
+};

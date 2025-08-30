@@ -1,66 +1,62 @@
 const db = require('../../config/database');
 
-// Tüm stok kalemlerini, bileşen bilgilerini de dahil ederek listeler
+async function componentExists(component_id) {
+  const exists = await db('components').where({ component_id }).first();
+  return !!exists;
+}
+
 async function findAll() {
-  const sql = `
-    SELECT
-      s.component_id,
-      s.quantity_on_hand,
-      c.component_name,
-      c.description,
-      c.manufacturer,
-      c.manufacturer_part_number
-    FROM inventory.stock s
-    JOIN inventory.components c ON s.component_id = c.component_id
-    ORDER BY c.component_name ASC; -- Bu satırı ekledik
-  `;
-  const { rows } = await db.query(sql);
-  return rows;
+  const stockItems = await db('stock')
+    .join('components', 'stock.component_id', '=', 'components.component_id')
+    .select(
+      'stock.component_id',
+      'stock.quantity_on_hand',
+      'components.component_name',
+      'components.description',
+      'components.manufacturer',
+      'components.manufacturer_part_number'
+    )
+    .orderBy('components.component_name', 'asc');
+  return stockItems;
 }
 
-// Yeni bir bileşeni stoğa ekler veya mevcutsa miktarını günceller
 async function createOrUpdate(component_id, quantity) {
-  const sql = `
-    INSERT INTO inventory.stock (component_id, quantity_on_hand)
-    VALUES ($1, $2)
-    ON CONFLICT (component_id)
-    DO UPDATE SET quantity_on_hand = inventory.stock.quantity_on_hand + EXCLUDED.quantity_on_hand
-    RETURNING *;
-  `;
-  const values = [component_id, quantity];
-  const { rows } = await db.query(sql, values);
-  return rows[0];
+  const newStock = await db('stock')
+    .insert({ component_id, quantity_on_hand: quantity })
+    .onConflict('component_id')
+    .merge({ quantity_on_hand: db.raw('stock.quantity_on_hand + ?', [quantity]) })
+    .returning('*');
+  return newStock[0];
 }
 
-// Bir bileşenin stok miktarını günceller
 async function updateQuantity(component_id, new_quantity) {
-  const sql = 'UPDATE inventory.stock SET quantity_on_hand = $1 WHERE component_id = $2 RETURNING *';
-  const values = [new_quantity, component_id];
-  const { rows } = await db.query(sql, values);
-  return rows[0];
+  const updatedStock = await db('stock')
+    .where({ component_id })
+    .update({ quantity_on_hand: new_quantity })
+    .returning('*');
+  return updatedStock[0];
 }
 
-// Bir bileşeni stoktan siler
 async function remove(component_id) {
-  const sql = 'DELETE FROM inventory.stock WHERE component_id = $1 RETURNING *';
-  const { rows } = await db.query(sql, [component_id]);
-  return rows[0];
+  const deletedStock = await db('stock')
+    .where({ component_id })
+    .del()
+    .returning('*');
+  return deletedStock[0];
 }
 
-// Bir bileşeni ID'sine göre bulur (JOIN ile detayları getirir)
 async function findById(component_id) {
-  const sql = `
-    SELECT
-      s.component_id,
-      s.quantity_on_hand,
-      c.component_name,
-      c.description
-    FROM inventory.stock s
-    JOIN inventory.components c ON s.component_id = c.component_id
-    WHERE s.component_id = $1;
-  `;
-  const { rows } = await db.query(sql, [component_id]);
-  return rows[0];
+  const stockItem = await db('stock')
+    .join('components', 'stock.component_id', '=', 'components.component_id')
+    .select(
+      'stock.component_id',
+      'stock.quantity_on_hand',
+      'components.component_name',
+      'components.description'
+    )
+    .where('stock.component_id', component_id)
+    .first();
+  return stockItem;
 }
 
 module.exports = {
@@ -69,4 +65,5 @@ module.exports = {
   updateQuantity,
   remove,
   findById,
+  componentExists,
 };

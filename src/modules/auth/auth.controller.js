@@ -1,62 +1,54 @@
-// src/modules/auth/auth.controller.js
-const { authenticateUser } = require('./auth.service');
+const express = require('express');
+const router = express.Router();
+const asyncHandler = require('express-async-handler');
+const authService = require('./auth.container');
+const jwt = require('jsonwebtoken');
+const { UnauthorizedError } = require('../../shared/errors');
+const validator = require('../../shared/middleware/validator');
+const { loginSchema } = require('./auth.validators');
 
-const loginUser = async (req, res) => {
+const loginUser = asyncHandler(async (req, res) => {
     const { username, password, rememberMe } = req.body;
 
-    try {
-        const token = await authenticateUser(username, password, rememberMe);
-        
-        // Token'ı HTTP-only ve Secure olarak cookie'ye kaydet
-        // Secure: Üretim ortamında sadece HTTPS üzerinde çalışır
-        res.cookie('auth-token', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'None', // veya 'None'
-            domain: '.zit.lol' // Tüm alt alan adları için
-        });
+    const token = await authService.authenticateUser(username, password, rememberMe);
+    
+    res.cookie('auth-token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None', 
+        domain: '.zit.lol'
+    });
 
-        // Başarılı giriş yanıtı gönder, token olmadan
-        res.status(200).json({ message: 'Giriş başarılı.' });
-
-    } catch (error) {
-        // Service'den gelen hataları yakala ve yanıt gönder
-        res.status(401).json({ message: error.message });
-    }
-};
+    res.status(200).json({ message: 'Giriş başarılı.' });
+});
 
 const logoutUser = (req, res) => {
-    // Cookie'yi temizle
     res.clearCookie('auth-token');
     res.status(200).json({ message: 'Çıkış yapıldı.' });
 };
 
 const verifyToken = (req, res, next) => {
-    // Cookie'den token'ı al
     const token = req.cookies['auth-token'];
 
     if (!token) {
-        return res.status(401).json({ message: 'Yetkilendirme token\'ı bulunamadı.' });
+        throw new UnauthorizedError('Yetkilendirme token\'ı bulunamadı.');
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // Token içindeki bilgileri isteğe ekle
-        next(); // Bir sonraki middleware veya rotaya geç
+        req.user = decoded;
+        next();
     } catch (error) {
-        res.status(401).json({ message: 'Geçersiz veya süresi dolmuş token.' });
+        throw new UnauthorizedError('Geçersiz veya süresi dolmuş token.');
     }
 };
 
 const checkAuthStatus = (req, res) => {
-    // Eğer verifyToken middleware'i token'ı doğruladıysa, buraya ulaşılır.
-    // Bu, kullanıcının giriş yaptığını gösterir.
     res.status(200).json({ message: 'Kullanıcı giriş yapmış.', user: req.user });
 };
 
-module.exports = {
-    loginUser,
-    logoutUser,
-    verifyToken,
-    checkAuthStatus
-};
+router.post('/login', validator(loginSchema), loginUser);
+router.post('/logout', logoutUser);
+router.get('/verify', verifyToken, checkAuthStatus);
+
+module.exports = router;

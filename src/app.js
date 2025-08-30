@@ -3,6 +3,7 @@ const app = express();
 const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const errorHandler = require('./shared/errors/errorHandler');
 
 // Middlewares
 app.use(cors({
@@ -22,10 +23,10 @@ const importerRoutes = require('./modules/importer/importer.controller');
 const productionRoutes = require('./modules/production/production.controller');
 const componentRoutes = require('./modules/component-management/component.controller');
 const pcbRoutes = require('./modules/pcb-management/pcb.controller');
-const authRoutes = require('./modules/auth/auth.routes'); 
+const authController = require('./modules/auth/auth.controller'); 
 
 // Rota tanımlamaları
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authController);
 app.use('/api/stock', stockRoutes);
 app.use('/api/bom', bomRoutes);
 app.use('/api/procurement', procurementRoutes);
@@ -33,5 +34,8 @@ app.use('/api/importer', importerRoutes);
 app.use('/api/production', productionRoutes);
 app.use('/api/components', componentRoutes);
 app.use('/api/pcb', pcbRoutes);
+
+// Error handling middleware
+app.use(errorHandler);
 
 module.exports = app;
