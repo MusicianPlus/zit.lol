@@ -6,6 +6,9 @@ const jwt = require('jsonwebtoken');
 const { UnauthorizedError } = require('../../shared/errors');
 const validator = require('../../shared/middleware/validator');
 const { loginSchema } = require('./auth.validators');
+// src/modules/auth/auth.controller.js
+const { authenticateUser } = require('./auth.service');
+const jwt = require('jsonwebtoken');
 
 const loginUser = asyncHandler(async (req, res) => {
     const { username, password, rememberMe } = req.body;
@@ -47,8 +50,17 @@ const checkAuthStatus = (req, res) => {
     res.status(200).json({ message: 'Kullanıcı giriş yapmış.', user: req.user });
 };
 
+<<<<<<< HEAD
 router.post('/login', validator(loginSchema), loginUser);
 router.post('/logout', logoutUser);
 router.get('/verify', verifyToken, checkAuthStatus);
 
 module.exports = router;
+=======
+module.exports = {
+    loginUser,
+    logoutUser,
+    verifyToken,
+    checkAuthStatus
+};
+>>>>>>> 7e2785e2fadb66f37f1cf3ee857b7552b02c4254
