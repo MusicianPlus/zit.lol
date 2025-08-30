@@ -1,5 +1,6 @@
 // src/modules/auth/auth.controller.js
 const { authenticateUser } = require('./auth.service');
+const jwt = require('jsonwebtoken');
 
 const loginUser = async (req, res) => {
     const { username, password, rememberMe } = req.body;
@@ -11,7 +12,7 @@ const loginUser = async (req, res) => {
         // Secure: Üretim ortamında sadece HTTPS üzerinde çalışır
         res.cookie('auth-token', token, {
             httpOnly: true,
-            secure: true,
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'None', // veya 'None'
             domain: '.zit.lol' // Tüm alt alan adları için
         });
